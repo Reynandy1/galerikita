@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f6f1e9">
+  <meta name="description" content="Mystic Archive - An exhibition vault for our memories.">
+
+  <title>Mystic Archive — Exhibition Vault</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="page-grain"></div>
+
+  <!-- STARDUST / MAGIC PARTICLES BACKGROUND EFFECT -->
+  <div class="stardust-container" aria-hidden="true">
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+    <span class="particle"></span>
+  </div>
+
+  <!-- HEADER -->
+  <header class="site-header">
+
+    <a href="#home" class="brand">
+      <span class="brand-symbol">◇</span>
+      <span class="brand-name">mystic archive</span>
+    </a>
+
+    <nav class="main-nav" id="mainNav">
+      <a href="#home" class="nav-link active">Home</a>
+      <a href="#gallery-section" class="nav-link">Exhibition</a>
+      <a href="#about" class="nav-link">The Chronicle</a>
+    </nav>
+
+    <div class="header-right">
+      <span class="private-label">
+        <span class="status-dot"></span>
+        EXHIBITION VAULT
+      </span>
+
+      <button
+        class="mobile-menu-button"
+        id="mobileMenuButton"
+        aria-label="Toggle navigation"
+      >
+        ☰
+      </button>
+    </div>
+
+  </header>
+
+  <main>
+
+    <!-- HERO SECTION -->
+    <section class="hero-section" id="home">
+
+      <div class="hero-copy animate-on-load">
+
+        <div class="eyebrow">
+          <span class="eyebrow-line"></span>
+          CURATED EXHIBITION VAULT
+        </div>
+
+        <h1>
+          Mystic<br>
+          <em>Archive.</em>
+        </h1>
+
+        <p class="hero-intro">
+          A sacred vault of timeless fragments,<br>
+          preserved in eternal exhibition.
+        </p>
+
+        <p class="hero-description">
+          A secure sanctuary showcasing our captured realities,
+          sacred milestones, and the profound echoes
+          we wish to keep immortal.
+        </p>
+
+        <div class="hero-actions">
+
+          <a href="#gallery-section" class="button button-dark">
+            Explore artifacts <span>↗</span>
+          </a>
+
+          <span class="hero-handwritten">
+            preserved in eternity ◇
+          </span>
+
+        </div>
+
+        <div class="hero-footnote">
+          <span>EST. VAULT · 2026</span>
+          <span id="heroMemoryCount">0 ARTIFACTS EXHIBITED</span>
+        </div>
+
+      </div>
+
+      <!-- HERO PHOTO COLLAGE -->
+      <div class="hero-art animate-float">
+
+        <div class="hero-orbit orbit-one"></div>
+        <div class="hero-orbit orbit-two"></div>
+
+        <div class="hero-photo hero-photo-main">
+          <div class="sample-photo sample-main">
+            <span class="sample-photo-mark">◇</span>
+            <span class="sample-photo-caption">prime exhibition</span>
+          </div>
+
+          <span class="photo-index">01 / VAULT</span>
+        </div>
+
+        <div class="hero-photo hero-photo-top">
+          <div class="sample-photo sample-top">
+            <span>relic details</span>
+          </div>
+        </div>
+
+        <div class="hero-photo hero-photo-bottom">
+          <div class="sample-photo sample-bottom">
+            <span>sacred domain</span>
+          </div>
+        </div>
+
+        <div class="round-stamp">
+          <span>TIME</span>
+          <b>&</b>
+          <span>SPACE</span>
+        </div>
+
+        <div class="hero-side-note">
+          preserving moments<br>
+          not illusions
+        </div>
+
+      </div>
+
+      <div class="hero-scroll">
+        <span></span>
+        SCROLL TO ENTER VAULT
+      </div>
+
+    </section>
+
+    <!-- QUOTE SECTION -->
+    <section class="intro-strip" id="about">
+
+      <p>
+        “Some echoes fade, but the resonance remains.”
+      </p>
+
+      <span>— MYSTIC ARCHIVE VAULT</span>
+
+    </section>
+
+    <!-- GALLERY SECTION (EXHIBITION) -->
+    <section class="gallery-section" id="gallery-section">
+
+      <!-- Kelopak Bunga Anggun yang Melayang Lembut (Tanpa Bingkai Kiri) -->
+      <div class="exhibition-botanical-decor" aria-hidden="true">
+        <div class="floating-petal petal-1"></div>
+        <div class="floating-petal petal-2"></div>
+        <div class="floating-petal petal-3"></div>
+      </div>
+
+      <div class="section-topline">
+
+        <div>
+          <p class="eyebrow">THE MYSTIC COLLECTION</p>
+
+          <h2>
+            Exhibited <em>artifacts.</em>
+          </h2>
+
+          <p class="section-description">
+            Every relic holds a fragment of our eternal narrative.
+          </p>
+        </div>
+
+        <label class="button button-upload">
+          <span class="upload-plus">＋</span>
+          Add artifact
+
+          <input
+            type="file"
+            id="photoUpload"
+            accept="image/*"
+            multiple
+            hidden
+          >
+        </label>
+
+      </div>
+
+      <!-- GALLERY FILTERS -->
+      <div class="gallery-controls">
+
+        <div class="category-list">
+
+          <button
+            class="filter-chip active"
+            data-category="All"
+          >
+            All artifacts
+            <span id="allCount">0</span>
+          </button>
+
+          <button
+            class="filter-chip"
+            data-category="Together"
+          >
+            Together
+          </button>
+
+          <button
+            class="filter-chip"
+            data-category="Travel"
+          >
+            Travel
+          </button>
+
+          <button
+            class="filter-chip"
+            data-category="Favorites"
+          >
+            ◇ Favorites
+          </button>
+
+        </div>
+
+        <!-- SEARCH -->
+        <label class="search-field">
+
+          <span class="search-icon">⌕</span>
+
+          <input
+            type="search"
+            id="searchInput"
+            placeholder="Search artifact..."
+            autocomplete="off"
+          >
+
+          <kbd>⌘ K</kbd>
+
+        </label>
+
+      </div>
+
+      <!-- GALLERY INFORMATION -->
+      <div class="gallery-meta">
+
+        <span id="resultCount">0 ARTIFACTS</span>
+
+        <span class="gallery-meta-center">
+          VAULT OF TIMELESS WHISPERS
+        </span>
+
+        <select id="sortSelect">
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+          <option value="az">Name A–Z</option>
+        </select>
+
+      </div>
+
+      <!-- UPLOAD PROGRESS -->
+      <div
+        class="upload-progress-wrap"
+        id="uploadProgressWrap"
+        hidden
+      >
+
+        <div class="upload-progress-copy">
+          <span id="uploadProgressText">
+            Securing artifact...
+          </span>
+
+          <span id="uploadProgressNumber">0%</span>
+        </div>
+
+        <div class="upload-progress-track">
+          <div id="uploadProgressBar"></div>
+        </div>
+
+      </div>
+
+      <!-- PHOTO GALLERY -->
+      <div
+        class="photo-grid"
+        id="photoGrid"
+        aria-live="polite"
+      ></div>
+
+      <!-- EMPTY STATE -->
+      <div class="empty-state" id="emptyState" hidden>
+
+        <div class="empty-flower">✳</div>
+
+        <p class="eyebrow">
+          A NEW CHRONICLE BEGINS
+        </p>
+
+        <h3>
+          No artifacts <em>exhibited yet.</em>
+        </h3>
+
+        <p class="empty-description">
+          Your precious fragments deserve a place in this vault.<br>
+          Upload the first artifact to commence.
+        </p>
+
+        <label class="button button-dark">
+          Exhibit your first artifact <span>↗</span>
+
+          <input
+            type="file"
+            id="emptyUpload"
+            accept="image/*"
+            multiple
+            hidden
+          >
+        </label>
+
+      </div>
+
+      <!-- LOAD MORE -->
+      <div class="load-more-row" id="loadMoreRow" hidden>
+
+        <button
+          class="button button-outline"
+          id="loadMoreButton"
+        >
+          Load more artifacts ↓
+        </button>
+
+      </div>
+
+    </section>
+
+    <!-- CLOSING SECTION -->
+    <section class="closing-section">
+
+      <div class="closing-decoration">◇</div>
+
+      <p class="eyebrow">
+        TO THE HORIZONS AHEAD
+      </p>
+
+      <h2>
+        More echoes<br>
+        <em>to archive.</em>
+      </h2>
+
+      <p>
+        Here's to undiscovered realms yet to be explored,<br>
+        and infinite timelines waiting for our imprint.
+      </p>
+
+      <a href="#gallery-section" class="text-link">
+        Return to exhibition <span>↑</span>
+      </a>
+
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+
+    <a class="footer-brand" href="#home">
+      <span>◇</span>
+      mystic archive
+    </a>
+
+    <p>
+      Every recorded fragment echoes in eternity.
+    </p>
+
+    <span class="footer-year">
+      EXHIBITION VAULT · 2026
+    </span>
+
+  </footer>
+
+  <!-- PHOTO VIEWER -->
+  <div
+    class="viewer"
+    id="photoViewer"
+    aria-hidden="true"
+  >
+
+    <button
+      class="viewer-close"
+      id="viewerClose"
+      aria-label="Close viewer"
+    >
+      ×
+    </button>
+
+    <button
+      class="viewer-arrow viewer-prev"
+      id="viewerPrev"
+      aria-label="Previous photo"
+    >
+      ‹
+    </button>
+
+    <div class="viewer-panel">
+
+      <div class="viewer-image-wrap">
+        <img
+          id="viewerImage"
+          alt="Selected artifact"
+        >
+      </div>
+
+      <div class="viewer-caption">
+
+        <div>
+          <p
+            class="viewer-category"
+            id="viewerCategory"
+          ></p>
+
+          <h3 id="viewerTitle"></h3>
+
+          <p
+            class="viewer-date"
+            id="viewerDate"
+          ></p>
+        </div>
+
+        <div class="viewer-actions">
+
+          <button
+            class="viewer-icon-button"
+            id="viewerFavorite"
+            aria-label="Toggle favorite"
+          >
+            ◇
+          </button>
+
+          <a
+            class="button button-dark viewer-download"
+            id="viewerDownload"
+            href="#"
+            download
+          >
+            Extract ↓
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <button
+      class="viewer-arrow viewer-next"
+      id="viewerNext"
+      aria-label="Next photo"
+    >
+      ›
+    </button>
+
+  </div>
+
+  <!-- ADD / EDIT DIALOG -->
+  <dialog class="memory-dialog" id="memoryDialog">
+
+    <form id="memoryForm">
+
+      <div class="dialog-heading">
+
+        <div>
+          <p
+            class="eyebrow"
+            id="dialogEyebrow"
+          >
+            A NEW ARTIFACT
+          </p>
+
+          <h3 id="dialogTitle">
+            Add to the <em>vault.</em>
+          </h3>
+        </div>
+
+        <button
+          type="button"
+          class="dialog-close"
+          id="dialogClose"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <label class="form-label" for="memoryName">
+        Artifact title
+      </label>
+
+      <input
+        class="form-input"
+        id="memoryName"
+        maxlength="80"
+        placeholder="A chronicle title"
+        required
+      >
+
+      <label class="form-label" for="memoryCategory">
+        Category
+      </label>
+
+      <select
+        class="form-input"
+        id="memoryCategory"
+      >
+        <option value="Together">Together</option>
+        <option value="Travel">Travel</option>
+      </select>
+
+      <label class="form-label" for="memoryDate">
+        Artifact date
+      </label>
+
+      <input
+        class="form-input"
+        id="memoryDate"
+        type="date"
+      >
+
+      <div class="dialog-actions">
+
+        <button
+          type="button"
+          class="button button-outline"
+          id="dialogCancel"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="button button-dark"
+          id="dialogSave"
+        >
+          Secure artifact
+        </button>
+
+      </div>
+
+      <p class="dialog-note">
+        Your artifacts remain secured locally within this browser vault.
+      </p>
+
+    </form>
+
+  </dialog>
+
+  <!-- TOAST -->
+  <div
+    class="toast"
+    id="toast"
+    role="status"
+    aria-live="polite"
+  ></div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
