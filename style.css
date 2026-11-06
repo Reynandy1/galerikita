@@ -1938,7 +1938,7 @@ a {
   transform: translate(-50%, 0);
 }
 
-/* ---------------- FLOATING PETALS & FLORAL ACCENTS ---------------- */
+/* ---------------- FLOATING PETALS ---------------- */
 
 .exhibition-botanical-decor {
   position: absolute;
@@ -1952,11 +1952,10 @@ a {
   width: 16px;
   height: 24px;
 
-  background: linear-gradient(135deg, #e8c5be 0%, #b88c6b 50%, #765640 100%);
+  background: linear-gradient(135deg, #d4b5a0, #8c6248);
   border-radius: 50% 0 50% 50%;
 
-  opacity: .35;
-  box-shadow: 0 0 8px rgba(184, 140, 107, 0.3);
+  opacity: .25;
   animation: floatPetalAnim 12s linear infinite;
 }
 
@@ -1982,30 +1981,6 @@ a {
   animation-duration: 15s;
   animation-delay: 6s;
   transform: rotate(45deg);
-}
-
-/* Dekorasi Buket Bunga watercolor */
-.floral-bouquet-corner {
-  position: absolute;
-  width: 220px;
-  height: 220px;
-  pointer-events: none;
-  z-index: 1;
-  opacity: 0.35;
-  background-image: radial-gradient(circle, rgba(184, 140, 107, 0.4) 0%, transparent 70%);
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
-}
-
-.floral-top-right {
-  top: 20px;
-  right: 20px;
-  transform: rotate(15deg);
-}
-
-.floral-bottom-left {
-  bottom: 20px;
-  left: 20px;
-  transform: rotate(-165deg);
 }
 
 /* ---------------- TABLET ---------------- */
