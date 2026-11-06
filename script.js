@@ -4,19 +4,95 @@
    MYSTIC ARCHIVE — GALLERY APPLICATION
    ========================================================= */
 
-/* ---------------- CONFIGURATION (Tanpa Personal) ---------------- */
+/* ---------------- CONFIGURATION ---------------- */
 
 const CONFIG = {
   databaseName: "MysticArchiveVaultDB",
   databaseVersion: 1,
   storeName: "artifacts",
-  maximumFileSize: 15 * 1024 * 1024,
-  pageSize: 30,
+  pageSize: 12,
   allowedCategories: [
     "Together",
     "Travel"
   ]
 };
+
+/* ---------------- DEFAULT GALLERY PHOTOS ---------------- */
+
+const DEFAULT_PHOTOS = [
+  {
+    name: "Eternal Moments",
+    category: "Together",
+    image: "images/foto1.jpeg",
+    date: "2026-10-01"
+  },
+  {
+    name: "Hidden Horizons",
+    category: "Travel",
+    image: "images/foto2.jpeg",
+    date: "2026-09-20"
+  },
+  {
+    name: "Golden Memories",
+    category: "Together",
+    image: "images/foto3.jpeg",
+    date: "2026-08-15"
+  },
+  {
+    name: "Quiet Escape",
+    category: "Travel",
+    image: "images/foto4.jpeg",
+    date: "2026-07-12"
+  },
+  {
+    name: "A Timeless Story",
+    category: "Together",
+    image: "images/foto5.jpeg",
+    date: "2026-06-18"
+  },
+  {
+    name: "Beyond The Clouds",
+    category: "Travel",
+    image: "images/foto6.jpeg",
+    date: "2026-05-21"
+  },
+  {
+    name: "Little Chapters",
+    category: "Together",
+    image: "images/foto7.jpeg",
+    date: "2026-04-10"
+  },
+  {
+    name: "Somewhere Beautiful",
+    category: "Travel",
+    image: "images/foto8.jpeg",
+    date: "2026-03-08"
+  },
+  {
+    name: "Fragments of Us",
+    category: "Together",
+    image: "images/foto9.jpeg",
+    date: "2026-02-14"
+  },
+  {
+    name: "The Lasting View",
+    category: "Travel",
+    image: "images/foto10.jpeg",
+    date: "2026-01-05"
+  },
+  {
+    name: "Memory in Bloom",
+    category: "Together",
+    image: "images/foto11.jpeg",
+    date: "2025-12-18"
+  },
+  {
+    name: "Whispers of Tomorrow",
+    category: "Travel",
+    image: "images/foto12.jpeg",
+    date: "2025-11-02"
+  }
+];
 
 /* ---------------- APPLICATION STATE ---------------- */
 
@@ -44,9 +120,6 @@ const state = {
 const elements = {
   photoGrid: document.getElementById("photoGrid"),
 
-  photoUpload: document.getElementById("photoUpload"),
-  emptyUpload: document.getElementById("emptyUpload"),
-
   searchInput: document.getElementById("searchInput"),
   sortSelect: document.getElementById("sortSelect"),
 
@@ -70,7 +143,6 @@ const elements = {
 
   memoryDialog: document.getElementById("memoryDialog"),
   memoryForm: document.getElementById("memoryForm"),
-
   memoryName: document.getElementById("memoryName"),
   memoryCategory: document.getElementById("memoryCategory"),
   memoryDate: document.getElementById("memoryDate"),
@@ -78,7 +150,6 @@ const elements = {
   dialogTitle: document.getElementById("dialogTitle"),
   dialogEyebrow: document.getElementById("dialogEyebrow"),
   dialogSave: document.getElementById("dialogSave"),
-
   dialogClose: document.getElementById("dialogClose"),
   dialogCancel: document.getElementById("dialogCancel"),
 
@@ -86,11 +157,6 @@ const elements = {
 
   loadMoreRow: document.getElementById("loadMoreRow"),
   loadMoreButton: document.getElementById("loadMoreButton"),
-
-  uploadProgressWrap: document.getElementById("uploadProgressWrap"),
-  uploadProgressText: document.getElementById("uploadProgressText"),
-  uploadProgressNumber: document.getElementById("uploadProgressNumber"),
-  uploadProgressBar: document.getElementById("uploadProgressBar"),
 
   mobileMenuButton: document.getElementById("mobileMenuButton"),
   mainNav: document.getElementById("mainNav")
@@ -100,10 +166,13 @@ const elements = {
    DATABASE
    ========================================================= */
 
-/* ---------------- OPEN DATABASE ---------------- */
-
 function openDatabase() {
   return new Promise((resolve, reject) => {
+    if (!("indexedDB" in window)) {
+      reject(new Error("IndexedDB is not supported."));
+      return;
+    }
+
     const request = indexedDB.open(
       CONFIG.databaseName,
       CONFIG.databaseVersion
@@ -155,8 +224,6 @@ function openDatabase() {
   });
 }
 
-/* ---------------- GENERIC TRANSACTION ---------------- */
-
 function runTransaction(mode, operation) {
   return new Promise((resolve, reject) => {
     if (!state.database) {
@@ -169,7 +236,9 @@ function runTransaction(mode, operation) {
       mode
     );
 
-    const store = transaction.objectStore(CONFIG.storeName);
+    const store = transaction.objectStore(
+      CONFIG.storeName
+    );
 
     let request;
 
@@ -197,12 +266,14 @@ function runTransaction(mode, operation) {
   });
 }
 
-/* ---------------- DATABASE CRUD ---------------- */
-
 async function getAllPhotos() {
-  return runTransaction(
+  const records = await runTransaction(
     "readonly",
     (store) => store.getAll()
+  );
+
+  return records.filter(
+    (record) => record.recordType !== "meta"
   );
 }
 
@@ -228,10 +299,147 @@ async function removePhoto(id) {
 }
 
 /* =========================================================
-   UTILITIES
+   LOAD DEFAULT PHOTOS
    ========================================================= */
 
-/* ---------------- ESCAPE HTML ---------------- */
+/*
+  Fungsi ini memeriksa foto yang sudah tersimpan
+  sebelum menambahkan foto bawaan.
+
+  Foto lama dengan nama Memory 01 sampai Memory 10
+  akan disesuaikan dengan koleksi terbaru.
+
+  Foto 11 dan 12 akan ditambahkan jika belum tersedia.
+
+  Data foto yang sudah dihapus tidak akan dibuat kembali
+  setelah penanda defaults-loaded tersimpan.
+*/
+
+async function loadDefaultPhotos() {
+  const allRecords = await runTransaction(
+    "readonly",
+    (store) => store.getAll()
+  );
+
+  const initialized = allRecords.some(
+    (record) =>
+      record.id === "defaults-loaded" &&
+      record.recordType === "meta"
+  );
+
+  let existingPhotos = allRecords.filter(
+    (record) => record.recordType !== "meta"
+  );
+
+  for (let index = 0; index < DEFAULT_PHOTOS.length; index++) {
+    const item = DEFAULT_PHOTOS[index];
+
+    const sourceKey = `default-photo-${index + 1}`;
+
+    const legacyName = `Memory ${String(index + 1).padStart(2, "0")}`;
+
+    const matchingPhotos = existingPhotos.filter((photo) => {
+      return (
+        photo.sourceKey === sourceKey ||
+        photo.name === item.name ||
+        photo.name === legacyName
+      );
+    });
+
+    const shouldAddMissingPhoto =
+      !initialized || index >= 10;
+
+    if (matchingPhotos.length > 0) {
+      const primaryPhoto = matchingPhotos[0];
+
+      const updatedPhoto = {
+        ...primaryPhoto,
+
+        name: item.name,
+        category: item.category,
+        image: item.image,
+
+        date: new Date(
+          `${item.date}T12:00:00`
+        ).toISOString(),
+
+        sourceKey,
+
+        favorite:
+          primaryPhoto.favorite ??
+          primaryPhoto.isFavorite ??
+          false,
+
+        note: primaryPhoto.note || ""
+      };
+
+      await updatePhoto(updatedPhoto);
+
+      /*
+        Jika versi sebelumnya sempat membuat
+        foto bawaan yang sama lebih dari satu kali,
+        duplikat foto bawaan tersebut dibersihkan.
+      */
+
+      for (let duplicateIndex = 1; duplicateIndex < matchingPhotos.length; duplicateIndex++) {
+        const duplicate = matchingPhotos[duplicateIndex];
+
+        await removePhoto(duplicate.id);
+
+        revokePhotoUrl(duplicate.id);
+      }
+
+      existingPhotos = existingPhotos.filter(
+        (photo) =>
+          !matchingPhotos.some(
+            (matched) => matched.id === photo.id
+          )
+      );
+
+      existingPhotos.push(updatedPhoto);
+
+    } else if (shouldAddMissingPhoto) {
+      const newPhoto = {
+        name: item.name,
+        category: item.category,
+        image: item.image,
+
+        date: new Date(
+          `${item.date}T12:00:00`
+        ).toISOString(),
+
+        createdAt: new Date().toISOString(),
+
+        favorite: false,
+        note: "",
+
+        sourceKey
+      };
+
+      await addPhoto(newPhoto);
+
+      existingPhotos.push(newPhoto);
+    }
+  }
+
+  /*
+    Penanda ini hanya dibuat sekali.
+    Fungsinya mencegah foto yang sengaja dihapus
+    muncul kembali saat halaman dimuat ulang.
+  */
+
+  if (!initialized) {
+    await addPhoto({
+      id: "defaults-loaded",
+      recordType: "meta",
+      value: true
+    });
+  }
+}
+
+/* =========================================================
+   UTILITIES
+   ========================================================= */
 
 function escapeHTML(value) {
   return String(value).replace(/[&<>"']/g, (character) => {
@@ -247,8 +455,6 @@ function escapeHTML(value) {
   });
 }
 
-/* ---------------- FORMAT DATE ---------------- */
-
 function formatDate(value) {
   const date = new Date(value);
 
@@ -263,8 +469,6 @@ function formatDate(value) {
   });
 }
 
-/* ---------------- DATE INPUT FORMAT ---------------- */
-
 function dateForInput(value) {
   const date = new Date(value);
 
@@ -277,8 +481,6 @@ function dateForInput(value) {
   return localDate.toISOString().slice(0, 10);
 }
 
-/* ---------------- FILE NAME ---------------- */
-
 function cleanFileName(value) {
   return String(value)
     .replace(/[<>:"/\\|?*\x00-\x1F]/g, "")
@@ -286,9 +488,20 @@ function cleanFileName(value) {
     .slice(0, 80);
 }
 
-/* ---------------- OBJECT URL MANAGEMENT ---------------- */
+/*
+  Foto bawaan menggunakan alamat file langsung.
+  Foto lama yang tersimpan sebagai Blob tetap didukung.
+*/
 
 function getPhotoUrl(photo) {
+  if (typeof photo.image === "string") {
+    return photo.image;
+  }
+
+  if (!photo.image) {
+    return "";
+  }
+
   if (!state.objectUrls.has(photo.id)) {
     const url = URL.createObjectURL(photo.image);
 
@@ -320,8 +533,12 @@ function revokeAllPhotoUrls() {
    ========================================================= */
 
 function showToast(message) {
-  elements.toast.textContent = message;
+  if (!elements.toast) {
+    console.info(message);
+    return;
+  }
 
+  elements.toast.textContent = message;
   elements.toast.classList.add("visible");
 
   clearTimeout(state.toastTimer);
@@ -339,6 +556,8 @@ async function initializeGallery() {
   try {
     state.database = await openDatabase();
 
+    await loadDefaultPhotos();
+
     attachEventListeners();
 
     await refreshPhotos();
@@ -351,13 +570,9 @@ async function initializeGallery() {
       error
     );
 
-    showToast(
-      "Unable to open local vault storage."
-    );
+    showToast("Unable to open local vault storage.");
   }
 }
-
-/* ---------------- REFRESH DATA ---------------- */
 
 async function refreshPhotos() {
   state.photos = await getAllPhotos();
@@ -378,10 +593,14 @@ function updateCounters() {
     (photo) => photo.favorite
   ).length;
 
-  elements.allCount.textContent = total;
+  if (elements.allCount) {
+    elements.allCount.textContent = total;
+  }
 
-  elements.heroMemoryCount.textContent =
-    `${total} ARTIFACTS EXHIBITED`;
+  if (elements.heroMemoryCount) {
+    elements.heroMemoryCount.textContent =
+      `${total} ARTIFACTS EXHIBITED`;
+  }
 
   document
     .querySelectorAll('[data-category="Favorites"]')
@@ -400,8 +619,6 @@ function updateCounters() {
 function applyFilters() {
   let result = [...state.photos];
 
-  /* CATEGORY FILTER */
-
   if (state.activeCategory === "Favorites") {
     result = result.filter(
       (photo) => photo.favorite
@@ -413,35 +630,38 @@ function applyFilters() {
     );
   }
 
-  /* SEARCH FILTER */
-
   if (state.searchTerm.trim()) {
     const term = state.searchTerm
       .trim()
       .toLowerCase();
 
     result = result.filter((photo) => {
-      const titleMatch =
-        photo.name.toLowerCase().includes(term);
+      const titleMatch = photo.name
+        .toLowerCase()
+        .includes(term);
 
-      const categoryMatch =
-        photo.category.toLowerCase().includes(term);
+      const categoryMatch = photo.category
+        .toLowerCase()
+        .includes(term);
 
-      const noteMatch =
-        (photo.note || "").toLowerCase().includes(term);
+      const noteMatch = (photo.note || "")
+        .toLowerCase()
+        .includes(term);
 
-      return titleMatch || categoryMatch || noteMatch;
+      return (
+        titleMatch ||
+        categoryMatch ||
+        noteMatch
+      );
     });
   }
 
   sortPhotos(result);
 
   state.visiblePhotos = result;
-
   state.visibleLimit = CONFIG.pageSize;
 
   renderGallery();
-
   updateCounters();
 }
 
@@ -476,6 +696,10 @@ function sortPhotos(list) {
    ========================================================= */
 
 function renderGallery() {
+  if (!elements.photoGrid) {
+    return;
+  }
+
   const visible = state.visiblePhotos.slice(
     0,
     state.visibleLimit
@@ -483,11 +707,15 @@ function renderGallery() {
 
   elements.photoGrid.innerHTML = "";
 
-  elements.emptyState.hidden =
-    state.visiblePhotos.length !== 0;
+  if (elements.emptyState) {
+    elements.emptyState.hidden =
+      state.visiblePhotos.length !== 0;
+  }
 
-  elements.loadMoreRow.hidden =
-    state.visiblePhotos.length <= state.visibleLimit;
+  if (elements.loadMoreRow) {
+    elements.loadMoreRow.hidden =
+      state.visiblePhotos.length <= state.visibleLimit;
+  }
 
   visible.forEach((photo, index) => {
     const card = createPhotoCard(photo, index);
@@ -497,8 +725,10 @@ function renderGallery() {
 
   const count = state.visiblePhotos.length;
 
-  elements.resultCount.textContent =
-    `${count} ${count === 1 ? "ARTIFACT" : "ARTIFACTS"}`;
+  if (elements.resultCount) {
+    elements.resultCount.textContent =
+      `${count} ${count === 1 ? "ARTIFACT" : "ARTIFACTS"}`;
+  }
 }
 
 /* =========================================================
@@ -515,6 +745,14 @@ function createPhotoCard(photo, index) {
 
   const imageUrl = getPhotoUrl(photo);
 
+  const hasEditDialog = Boolean(
+    elements.memoryDialog &&
+    elements.memoryForm &&
+    elements.memoryName &&
+    elements.memoryCategory &&
+    elements.memoryDate
+  );
+
   card.innerHTML = `
     <div
       class="photo-visual"
@@ -522,9 +760,8 @@ function createPhotoCard(photo, index) {
       tabindex="0"
       aria-label="Open ${escapeHTML(photo.name)}"
     >
-
       <img
-        src="${imageUrl}"
+        src="${escapeHTML(imageUrl)}"
         alt="${escapeHTML(photo.name)}"
         loading="lazy"
       >
@@ -537,13 +774,11 @@ function createPhotoCard(photo, index) {
         <span>Inspect artifact ◇</span>
         <span>EXAMINE</span>
       </div>
-
     </div>
 
     <div class="photo-card-footer">
 
       <div class="photo-info">
-
         <h3 title="${escapeHTML(photo.name)}">
           ${escapeHTML(photo.name)}
         </h3>
@@ -551,37 +786,47 @@ function createPhotoCard(photo, index) {
         <p>
           ${formatDate(photo.date).toUpperCase()}
         </p>
-
       </div>
 
       <div class="photo-tools">
 
         <button
-          class="photo-tool favorite ${photo.favorite ? "is-favorite" : ""}"
+          class="photo-tool favorite ${
+            photo.favorite ? "is-favorite" : ""
+          }"
           data-action="favorite"
           aria-label="Toggle favorite"
+          aria-pressed="${photo.favorite ? "true" : "false"}"
+          type="button"
         >
           ${photo.favorite ? "◆" : "◇"}
         </button>
 
-        <button
-          class="photo-tool"
-          data-action="edit"
-          aria-label="Edit photo"
-        >
-          ✎
-        </button>
+        ${
+          hasEditDialog
+            ? `
+              <button
+                class="photo-tool"
+                data-action="edit"
+                aria-label="Edit photo"
+                type="button"
+              >
+                ✎
+              </button>
+            `
+            : ""
+        }
 
         <button
           class="photo-tool delete"
           data-action="delete"
           aria-label="Delete photo"
+          type="button"
         >
           ⌫
         </button>
 
       </div>
-
     </div>
   `;
 
@@ -608,11 +853,15 @@ function createPhotoCard(photo, index) {
       toggleFavorite(photo.id);
     });
 
-  card
-    .querySelector('[data-action="edit"]')
-    .addEventListener("click", () => {
+  const editButton = card.querySelector(
+    '[data-action="edit"]'
+  );
+
+  if (editButton) {
+    editButton.addEventListener("click", () => {
       openEditDialog(photo.id);
     });
+  }
 
   card
     .querySelector('[data-action="delete"]')
@@ -621,133 +870,6 @@ function createPhotoCard(photo, index) {
     });
 
   return card;
-}
-
-/* =========================================================
-   UPLOAD VALIDATION
-   ========================================================= */
-
-function validateImage(file) {
-  if (!file.type.startsWith("image/")) {
-    return "This file is not an image artifact.";
-  }
-
-  if (file.size > CONFIG.maximumFileSize) {
-    return "Each artifact must be smaller than 15 MB.";
-  }
-
-  return null;
-}
-
-/* =========================================================
-   UPLOAD PHOTOS
-   ========================================================= */
-
-async function handleUpload(event) {
-  const files = Array.from(
-    event.target.files || []
-  );
-
-  if (!files.length) {
-    return;
-  }
-
-  const validFiles = files.filter((file) => {
-    const error = validateImage(file);
-
-    if (error) {
-      showToast(`${file.name}: ${error}`);
-
-      return false;
-    }
-
-    return true;
-  });
-
-  if (!validFiles.length) {
-    event.target.value = "";
-
-    return;
-  }
-
-  elements.uploadProgressWrap.hidden = false;
-
-  let completed = 0;
-
-  for (const file of validFiles) {
-    const defaultName = cleanFileName(
-      file.name.replace(/\.[^/.]+$/, "")
-    );
-
-    const photo = {
-      name: defaultName || "Untitled artifact",
-
-      category: "Together",
-
-      date: new Date().toISOString(),
-
-      createdAt: new Date().toISOString(),
-
-      image: file,
-
-      favorite: false,
-
-      note: ""
-    };
-
-    try {
-      await addPhoto(photo);
-
-      completed += 1;
-
-      const percentage = Math.round(
-        completed / validFiles.length * 100
-      );
-
-      updateUploadProgress(
-        percentage,
-        file.name
-      );
-
-    } catch (error) {
-      console.error(
-        "Could not secure artifact:",
-        error
-      );
-
-      showToast(
-        "An artifact could not be secured. Storage may be full."
-      );
-    }
-  }
-
-  elements.uploadProgressWrap.hidden = true;
-
-  elements.uploadProgressBar.style.width = "0%";
-
-  event.target.value = "";
-
-  await refreshPhotos();
-
-  showToast(
-    `${completed} ${completed === 1 ? "artifact" : "artifacts"} secured successfully.`
-  );
-}
-
-/* ---------------- UPLOAD PROGRESS ---------------- */
-
-function updateUploadProgress(
-  percentage,
-  filename
-) {
-  elements.uploadProgressBar.style.width =
-    `${percentage}%`;
-
-  elements.uploadProgressNumber.textContent =
-    `${percentage}%`;
-
-  elements.uploadProgressText.textContent =
-    `Securing ${filename}`;
 }
 
 /* =========================================================
@@ -763,6 +885,8 @@ async function toggleFavorite(id) {
     return;
   }
 
+  const previousFavorite = photo.favorite;
+
   photo.favorite = !photo.favorite;
 
   try {
@@ -776,7 +900,16 @@ async function toggleFavorite(id) {
         : "Removed from favorites."
     );
 
+    if (
+      state.viewerPhotoId === id &&
+      !state.visiblePhotos.some((item) => item.id === id)
+    ) {
+      closeViewer();
+    }
+
   } catch (error) {
+    photo.favorite = previousFavorite;
+
     console.error(error);
 
     showToast("Could not update favorite status.");
@@ -811,6 +944,10 @@ async function deleteMemory(id) {
 
     await refreshPhotos();
 
+    if (state.viewerPhotoId === id) {
+      closeViewer();
+    }
+
     showToast("Artifact removed.");
 
   } catch (error) {
@@ -825,6 +962,10 @@ async function deleteMemory(id) {
    ========================================================= */
 
 function openEditDialog(id) {
+  if (!elements.memoryDialog) {
+    return;
+  }
+
   const photo = state.photos.find(
     (item) => item.id === id
   );
@@ -835,41 +976,45 @@ function openEditDialog(id) {
 
   state.editingPhotoId = id;
 
-  elements.dialogEyebrow.textContent =
-    "EDIT ARTIFACT";
+  if (elements.dialogEyebrow) {
+    elements.dialogEyebrow.textContent = "EDIT ARTIFACT";
+  }
 
-  elements.dialogTitle.innerHTML =
-    'Refine vault <em>entry.</em>';
+  if (elements.dialogTitle) {
+    elements.dialogTitle.innerHTML =
+      'Refine vault <em>entry.</em>';
+  }
 
-  elements.dialogSave.textContent =
-    "Save changes";
+  if (elements.dialogSave) {
+    elements.dialogSave.textContent = "Save changes";
+  }
 
-  elements.memoryName.value =
-    photo.name;
-
-  elements.memoryCategory.value =
-    photo.category;
-
-  elements.memoryDate.value =
-    dateForInput(photo.date);
+  elements.memoryName.value = photo.name;
+  elements.memoryCategory.value = photo.category;
+  elements.memoryDate.value = dateForInput(photo.date);
 
   openDialog();
 }
 
-/* ---------------- OPEN DIALOG ---------------- */
-
 function openDialog() {
+  if (!elements.memoryDialog) {
+    return;
+  }
+
   elements.memoryDialog.showModal();
 
   document.body.classList.add("dialog-open");
 
-  elements.memoryName.focus();
+  if (elements.memoryName) {
+    elements.memoryName.focus();
+  }
 }
 
-/* ---------------- CLOSE DIALOG ---------------- */
-
 function closeDialog() {
-  if (elements.memoryDialog.open) {
+  if (
+    elements.memoryDialog &&
+    elements.memoryDialog.open
+  ) {
     elements.memoryDialog.close();
   }
 
@@ -877,10 +1022,10 @@ function closeDialog() {
 
   state.editingPhotoId = null;
 
-  elements.memoryForm.reset();
+  if (elements.memoryForm) {
+    elements.memoryForm.reset();
+  }
 }
-
-/* ---------------- SAVE EDITED MEMORY ---------------- */
 
 async function saveMemoryChanges(event) {
   event.preventDefault();
@@ -891,7 +1036,6 @@ async function saveMemoryChanges(event) {
 
   if (!photo) {
     closeDialog();
-
     return;
   }
 
@@ -899,15 +1043,11 @@ async function saveMemoryChanges(event) {
     elements.memoryName.value
   );
 
-  const newCategory =
-    elements.memoryCategory.value;
-
-  const newDate =
-    elements.memoryDate.value;
+  const newCategory = elements.memoryCategory.value;
+  const newDate = elements.memoryDate.value;
 
   if (!newName) {
     showToast("Please enter an artifact title.");
-
     return;
   }
 
@@ -915,12 +1055,10 @@ async function saveMemoryChanges(event) {
     !CONFIG.allowedCategories.includes(newCategory)
   ) {
     showToast("Please select a valid category.");
-
     return;
   }
 
   photo.name = newName;
-
   photo.category = newCategory;
 
   if (newDate) {
@@ -949,9 +1087,14 @@ async function saveMemoryChanges(event) {
    PHOTO VIEWER
    ========================================================= */
 
-/* ---------------- OPEN VIEWER ---------------- */
-
 function openViewer(id) {
+  if (
+    !elements.viewer ||
+    !elements.viewerImage
+  ) {
+    return;
+  }
+
   const index = state.visiblePhotos.findIndex(
     (photo) => photo.id === id
   );
@@ -961,7 +1104,6 @@ function openViewer(id) {
   }
 
   state.viewerIndex = index;
-
   state.viewerPhotoId = id;
 
   renderViewer();
@@ -976,15 +1118,11 @@ function openViewer(id) {
   document.body.classList.add("dialog-open");
 }
 
-/* ---------------- RENDER VIEWER ---------------- */
-
 function renderViewer() {
-  const photo =
-    state.visiblePhotos[state.viewerIndex];
+  const photo = state.visiblePhotos[state.viewerIndex];
 
   if (!photo) {
     closeViewer();
-
     return;
   }
 
@@ -993,31 +1131,35 @@ function renderViewer() {
   const url = getPhotoUrl(photo);
 
   elements.viewerImage.src = url;
-
   elements.viewerImage.alt = photo.name;
 
-  elements.viewerTitle.textContent =
-    photo.name;
+  if (elements.viewerTitle) {
+    elements.viewerTitle.textContent = photo.name;
+  }
 
-  elements.viewerCategory.textContent =
-    photo.category;
+  if (elements.viewerCategory) {
+    elements.viewerCategory.textContent = photo.category;
+  }
 
-  elements.viewerDate.textContent =
-    formatDate(photo.date);
+  if (elements.viewerDate) {
+    elements.viewerDate.textContent = formatDate(photo.date);
+  }
 
-  elements.viewerDownload.href = url;
+  if (elements.viewerDownload) {
+    elements.viewerDownload.href = url;
 
-  elements.viewerDownload.download =
-    `${cleanFileName(photo.name) || "artifact"}`;
+    elements.viewerDownload.download =
+      `${cleanFileName(photo.name) || "artifact"}.jpeg`;
+  }
 
-  elements.viewerFavorite.textContent =
-    photo.favorite ? "◆" : "◇";
+  if (elements.viewerFavorite) {
+    elements.viewerFavorite.textContent =
+      photo.favorite ? "◆" : "◇";
 
-  elements.viewerFavorite.style.color =
-    photo.favorite ? "#b77f7c" : "";
+    elements.viewerFavorite.style.color =
+      photo.favorite ? "#b77f7c" : "";
+  }
 }
-
-/* ---------------- NEXT PHOTO ---------------- */
 
 function showNextPhoto() {
   if (!state.visiblePhotos.length) {
@@ -1030,8 +1172,6 @@ function showNextPhoto() {
 
   renderViewer();
 }
-
-/* ---------------- PREVIOUS PHOTO ---------------- */
 
 function showPreviousPhoto() {
   if (!state.visiblePhotos.length) {
@@ -1048,9 +1188,11 @@ function showPreviousPhoto() {
   renderViewer();
 }
 
-/* ---------------- CLOSE VIEWER ---------------- */
-
 function closeViewer() {
+  if (!elements.viewer) {
+    return;
+  }
+
   elements.viewer.classList.remove("open");
 
   elements.viewer.setAttribute(
@@ -1058,14 +1200,14 @@ function closeViewer() {
     "true"
   );
 
-  elements.viewerImage.src = "";
+  if (elements.viewerImage) {
+    elements.viewerImage.src = "";
+  }
 
   document.body.classList.remove("dialog-open");
 
   state.viewerPhotoId = null;
 }
-
-/* ---------------- VIEWER FAVORITE ---------------- */
 
 async function toggleViewerFavorite() {
   if (state.viewerPhotoId === null) {
@@ -1117,9 +1259,7 @@ function handleSearch(event) {
    ========================================================= */
 
 function handleCategoryChange(event) {
-  const button = event.target.closest(
-    "[data-category]"
-  );
+  const button = event.target.closest("[data-category]");
 
   if (!button) {
     return;
@@ -1133,8 +1273,7 @@ function handleCategoryChange(event) {
 
   button.classList.add("active");
 
-  state.activeCategory =
-    button.dataset.category;
+  state.activeCategory = button.dataset.category;
 
   state.visibleLimit = CONFIG.pageSize;
 
@@ -1157,11 +1296,17 @@ function handleSortChange(event) {
 
 function handleKeyboard(event) {
   if (event.key === "Escape") {
-    if (elements.viewer.classList.contains("open")) {
+    if (
+      elements.viewer &&
+      elements.viewer.classList.contains("open")
+    ) {
       closeViewer();
     }
 
-    if (elements.memoryDialog.open) {
+    if (
+      elements.memoryDialog &&
+      elements.memoryDialog.open
+    ) {
       closeDialog();
     }
   }
@@ -1170,12 +1315,15 @@ function handleKeyboard(event) {
     (event.metaKey || event.ctrlKey) &&
     event.key.toLowerCase() === "k"
   ) {
-    event.preventDefault();
+    if (elements.searchInput) {
+      event.preventDefault();
 
-    elements.searchInput.focus();
+      elements.searchInput.focus();
+    }
   }
 
   if (
+    elements.viewer &&
     elements.viewer.classList.contains("open")
   ) {
     if (event.key === "ArrowRight") {
@@ -1193,15 +1341,29 @@ function handleKeyboard(event) {
    ========================================================= */
 
 function toggleMobileMenu() {
-  elements.mainNav.classList.toggle(
-    "menu-open"
-  );
+  if (elements.mainNav) {
+    const isOpen = elements.mainNav.classList.toggle("menu-open");
+
+    if (elements.mobileMenuButton) {
+      elements.mobileMenuButton.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+      );
+    }
+  }
 }
 
 function closeMobileMenu() {
-  elements.mainNav.classList.remove(
-    "menu-open"
-  );
+  if (elements.mainNav) {
+    elements.mainNav.classList.remove("menu-open");
+  }
+
+  if (elements.mobileMenuButton) {
+    elements.mobileMenuButton.setAttribute(
+      "aria-expanded",
+      "false"
+    );
+  }
 }
 
 /* =========================================================
@@ -1210,111 +1372,139 @@ function closeMobileMenu() {
 
 function attachEventListeners() {
 
-  /* Upload events */
+  /* Search */
 
-  elements.photoUpload.addEventListener(
-    "change",
-    handleUpload
+  if (elements.searchInput) {
+    elements.searchInput.addEventListener(
+      "input",
+      handleSearch
+    );
+  }
+
+  /* Sorting */
+
+  if (elements.sortSelect) {
+    elements.sortSelect.addEventListener(
+      "change",
+      handleSortChange
+    );
+  }
+
+  /* Category filter */
+
+  const categoryList = document.querySelector(
+    ".category-list"
   );
 
-  elements.emptyUpload.addEventListener(
-    "change",
-    handleUpload
-  );
-
-  /* Search and sort */
-
-  elements.searchInput.addEventListener(
-    "input",
-    handleSearch
-  );
-
-  elements.sortSelect.addEventListener(
-    "change",
-    handleSortChange
-  );
-
-  /* Category filters */
-
-  document
-    .querySelector(".category-list")
-    .addEventListener(
+  if (categoryList) {
+    categoryList.addEventListener(
       "click",
       handleCategoryChange
     );
+  }
 
-  /* Viewer controls */
+  /* Photo viewer */
 
-  elements.viewerClose.addEventListener(
-    "click",
-    closeViewer
-  );
+  if (elements.viewerClose) {
+    elements.viewerClose.addEventListener(
+      "click",
+      closeViewer
+    );
+  }
 
-  elements.viewerPrev.addEventListener(
-    "click",
-    showPreviousPhoto
-  );
+  if (elements.viewerPrev) {
+    elements.viewerPrev.addEventListener(
+      "click",
+      showPreviousPhoto
+    );
+  }
 
-  elements.viewerNext.addEventListener(
-    "click",
-    showNextPhoto
-  );
+  if (elements.viewerNext) {
+    elements.viewerNext.addEventListener(
+      "click",
+      showNextPhoto
+    );
+  }
 
-  elements.viewer.addEventListener(
-    "click",
-    (event) => {
+  if (elements.viewer) {
+    elements.viewer.addEventListener("click", (event) => {
       if (event.target === elements.viewer) {
         closeViewer();
       }
-    }
-  );
+    });
+  }
 
-  elements.viewerFavorite.addEventListener(
-    "click",
-    toggleViewerFavorite
-  );
+  if (elements.viewerFavorite) {
+    elements.viewerFavorite.addEventListener(
+      "click",
+      toggleViewerFavorite
+    );
+  }
 
-  /* Dialog controls */
+  /* Edit dialog */
 
-  elements.memoryForm.addEventListener(
-    "submit",
-    saveMemoryChanges
-  );
+  if (elements.memoryForm) {
+    elements.memoryForm.addEventListener(
+      "submit",
+      saveMemoryChanges
+    );
+  }
 
-  elements.dialogClose.addEventListener(
-    "click",
-    closeDialog
-  );
+  if (elements.dialogClose) {
+    elements.dialogClose.addEventListener(
+      "click",
+      closeDialog
+    );
+  }
 
-  elements.dialogCancel.addEventListener(
-    "click",
-    closeDialog
-  );
+  if (elements.dialogCancel) {
+    elements.dialogCancel.addEventListener(
+      "click",
+      closeDialog
+    );
+  }
+
+  if (elements.memoryDialog) {
+    elements.memoryDialog.addEventListener(
+      "click",
+      (event) => {
+        if (event.target === elements.memoryDialog) {
+          closeDialog();
+        }
+      }
+    );
+  }
 
   /* Load more */
 
-  elements.loadMoreButton.addEventListener(
-    "click",
-    loadMorePhotos
-  );
+  if (elements.loadMoreButton) {
+    elements.loadMoreButton.addEventListener(
+      "click",
+      loadMorePhotos
+    );
+  }
 
-  /* Mobile menu */
+  /* Mobile navigation */
 
-  elements.mobileMenuButton.addEventListener(
-    "click",
-    toggleMobileMenu
-  );
+  if (elements.mobileMenuButton) {
+    elements.mobileMenuButton.addEventListener(
+      "click",
+      toggleMobileMenu
+    );
+  }
 
-  elements.mainNav
-    .querySelectorAll("a")
-    .forEach((link) => {
-      link.addEventListener(
-        "click",
-        closeMobileMenu
-      );
-    });
+  if (elements.mainNav) {
+    elements.mainNav
+      .querySelectorAll("a")
+      .forEach((link) => {
+        link.addEventListener(
+          "click",
+          closeMobileMenu
+        );
+      });
+  }
 
-  /* Keyboard */
+  /* Keyboard shortcuts */
 
   document.addEventListener(
     "keydown",
@@ -1328,6 +1518,10 @@ function attachEventListeners() {
 
 window.addEventListener("beforeunload", () => {
   revokeAllPhotoUrls();
+
+  if (state.database) {
+    state.database.close();
+  }
 });
 
 /* =========================================================
