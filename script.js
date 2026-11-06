@@ -302,19 +302,6 @@ async function removePhoto(id) {
    LOAD DEFAULT PHOTOS
    ========================================================= */
 
-/*
-  Fungsi ini memeriksa foto yang sudah tersimpan
-  sebelum menambahkan foto bawaan.
-
-  Foto lama dengan nama Memory 01 sampai Memory 10
-  akan disesuaikan dengan koleksi terbaru.
-
-  Foto 11 dan 12 akan ditambahkan jika belum tersedia.
-
-  Data foto yang sudah dihapus tidak akan dibuat kembali
-  setelah penanda defaults-loaded tersimpan.
-*/
-
 async function loadDefaultPhotos() {
   const allRecords = await runTransaction(
     "readonly",
@@ -375,12 +362,6 @@ async function loadDefaultPhotos() {
 
       await updatePhoto(updatedPhoto);
 
-      /*
-        Jika versi sebelumnya sempat membuat
-        foto bawaan yang sama lebih dari satu kali,
-        duplikat foto bawaan tersebut dibersihkan.
-      */
-
       for (let duplicateIndex = 1; duplicateIndex < matchingPhotos.length; duplicateIndex++) {
         const duplicate = matchingPhotos[duplicateIndex];
 
@@ -421,12 +402,6 @@ async function loadDefaultPhotos() {
       existingPhotos.push(newPhoto);
     }
   }
-
-  /*
-    Penanda ini hanya dibuat sekali.
-    Fungsinya mencegah foto yang sengaja dihapus
-    muncul kembali saat halaman dimuat ulang.
-  */
 
   if (!initialized) {
     await addPhoto({
@@ -487,11 +462,6 @@ function cleanFileName(value) {
     .trim()
     .slice(0, 80);
 }
-
-/*
-  Foto bawaan menggunakan alamat file langsung.
-  Foto lama yang tersimpan sebagai Blob tetap didukung.
-*/
 
 function getPhotoUrl(photo) {
   if (typeof photo.image === "string") {
