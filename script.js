@@ -30,67 +30,67 @@ const DEFAULT_PHOTOS = [
     name: "Hidden Horizons",
     category: "Travel",
     image: "images/foto2.jpeg",
-    date: "2026-09-20"
+    date: "2026-10-01"
   },
   {
     name: "Golden Memories",
     category: "Together",
     image: "images/foto3.jpeg",
-    date: "2026-08-15"
+    date: "2026-10-01"
   },
   {
     name: "Quiet Escape",
     category: "Travel",
     image: "images/foto4.jpeg",
-    date: "2026-07-12"
+    date: "2026-10-01"
   },
   {
     name: "A Timeless Story",
     category: "Together",
     image: "images/foto5.jpeg",
-    date: "2026-06-18"
+    date: "2026-10-01"
   },
   {
     name: "Beyond The Clouds",
     category: "Travel",
     image: "images/foto6.jpeg",
-    date: "2026-05-21"
+    date: "2026-10-01"
   },
   {
     name: "Little Chapters",
     category: "Together",
     image: "images/foto7.jpeg",
-    date: "2026-04-10"
+    date: "2026-10-01"
   },
   {
     name: "Somewhere Beautiful",
     category: "Travel",
     image: "images/foto8.jpeg",
-    date: "2026-03-08"
+    date: "2026-10-01"
   },
   {
     name: "Fragments of Us",
     category: "Together",
     image: "images/foto9.jpeg",
-    date: "2026-02-14"
+    date: "2026-10-01"
   },
   {
     name: "The Lasting View",
     category: "Travel",
     image: "images/foto10.jpeg",
-    date: "2026-01-05"
+    date: "2026-10-01"
   },
   {
     name: "Memory in Bloom",
     category: "Together",
     image: "images/foto11.jpeg",
-    date: "2025-12-18"
+    date: "2026-10-01"
   },
   {
     name: "Whispers of Tomorrow",
     category: "Travel",
     image: "images/foto12.jpeg",
-    date: "2025-11-02"
+    date: "2026-10-01"
   }
 ];
 
